@@ -2,7 +2,7 @@
  * Battleship Problem Set
  * Copyright (c) 2017 6.178 Course Staff
  */
-package src.battleship;
+package battleship;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -22,9 +22,8 @@ public class Main {
      * @return the 0-based column number, numbered from left to right
      */
     public static int squareToColumnNumber(String square) {
-    	String lowerCase = square.toLowerCase().substring(0, 1);
-        String columns = "abcdefghij";
-        return columns.indexOf(lowerCase);
+        // TODO implement this function
+        throw new UnsupportedOperationException("Main.squareToColumnNumber() unimplemented");
     }
 
     /**
@@ -34,9 +33,8 @@ public class Main {
      * @return the 0-based row number, numbered from top to bottom
      */
     public static int squareToRowNumber(String square) {
-        String digit = square.substring(1);
-        int position = Integer.parseInt(digit);
-        return position - 1;
+        // TODO implement this function
+        throw new UnsupportedOperationException("Main.squareToRowNumber() unimplemented");
     }
 
     /**
@@ -50,22 +48,7 @@ public class Main {
      */
     public static int[][] squaresShipSpans(int shipColumn, int shipRow, Direction shipDirection,
         ShipType shipType) {
-    	int column = 0;
-    	int row = 1;
-    	int shipLength = shipType.length();
-        int[][] shipSpan = new int[shipLength][2];
-        if(shipDirection == Direction.VERTICAL) {
-        	for(int i = 0; i < shipLength; i++) {
-        		shipSpan[i][column] = shipColumn;
-        		shipSpan[i][row] = shipRow + i;
-        	}
-        } else if (shipDirection == Direction.HORIZONTAL){
-        	for(int j = 0; j < shipLength; j++) {
-        		shipSpan[j][column] = shipColumn +j;
-        		shipSpan[j][row] = shipRow;
-        	}
-        }
-        return shipSpan;
+        throw new UnsupportedOperationException("Main.squaresShipSpans() unimplemented");
     }
 
     /**
@@ -81,15 +64,9 @@ public class Main {
      */
     public static boolean isHit(int shotColumn, int shotRow, int shipColumn, int shipRow,
         Direction shipDirection, ShipType shipType) {
-        // goal put column and row together, determine if it matches a column or row from shipspan
-    	int[] shot = {shotColumn, shotRow};
-    	int[][] shipSpan = squaresShipSpans(shipColumn, shipRow, shipDirection, shipType);
-    	for (int i = 0; i < shipType.length(); i++) {
-    		if(Arrays.equals(shipSpan[i], shot)) {
-    			return true;
-    		}
-    	}
-    	return false;
+        // TODO implement this function
+
+        throw new UnsupportedOperationException("Main.isHit() unimplemented");
     }
 
     /**
@@ -105,16 +82,8 @@ public class Main {
      */
     public static boolean shipInBounds(int height, int width, int column, int row,
         Direction direction, ShipType shipType) {
-        int[][] shipSpan = squaresShipSpans(column, row, direction, shipType);
-        int shipLength = shipType.length();
-        if(shipSpan[0][0] < 0 || shipSpan[0][1] < 0) {
-        	return false;
-        } else if (shipSpan[shipLength - 1][0] > width - 1 || shipSpan[shipLength - 1][1] > height - 1){
-        	
-        	return false;
-        } else {
-        	return true;
-        }
+        // TODO implement this function
+        throw new UnsupportedOperationException("Main.shipInBounds() unimplemented");
     }
 
     /**
@@ -127,8 +96,8 @@ public class Main {
      * @return true iff the shot is within the bounds of the game board
      */
     public static boolean shotInBounds(int height, int width, int column, int row) {
-        if(width > column && height > row) return true;
-        return false;
+        // TODO implement this function
+        throw new UnsupportedOperationException("Main.shotInBounds() unimplemented");
     }
 
     /**
@@ -140,23 +109,8 @@ public class Main {
      * @param board the 2d boolean array to be printed containing true's (hits) and false's (misses)
      */
     public static void printBoard(boolean[][] board) {
-    	String printBoard = "";
-        for(int i = 0; i < board.length; i++) {
-        	for(int j = 0; j < board[i].length; j++) {
-        		if(board[i][j] == true) {
-        			printBoard = printBoard + "X";
-        		} else if(board[i][j] == false) {
-        			printBoard = printBoard + "O";
-        		}
-        		if(j < board[i].length - 1) {
-        			printBoard = printBoard + "|";
-        		}
-        	}
-        	if(i < board.length - 1) {
-        		printBoard = printBoard + "\n";
-        	}
-        }
-        System.out.println(printBoard);
+        // TODO implement this function
+        throw new UnsupportedOperationException("Main.printBoard() unimplemented");
     }
 
     // DO NOT EDIT BELOW THIS COMMENT
