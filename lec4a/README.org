@@ -1,0 +1,474 @@
+#+TITLE: 6.178 Lecture 4: Objects and Classes
+#+AUTHOR: Aaron Zeng
+#+DATE: [2017-01-18 Wed]
+#+OPTIONS: ':t
+* Announcements
+** Problem Set Deadlines
+Problem sets are now due Sundays at 11:59 p.m.
+** Office Hours
+We will hold additional office hours on Sundays 11 a.m. to 4 p.m., room 4-145.
+** Problem Set Grades and Comments
+Your problem set grade and comments will be pushed to your personal
+=ps1-<kerberos>= repository as a =grade.txt= file in the root directory of the
+repo. Please contact staff by making a private Piazza post if you do not find
+such a file in your repo by Thursday morning.
+** Grading
+The bar for passing this class is not "passing all the tests", so *don't panic*
+if you aren't able to make all the tests pass by the deadline for any of the
+problem sets. Contact the staff by email or Piazza if you are concerned about
+your performance in the class.
+* Objects
+** What are objects?
+Objects are data types that can have both *state* and *behavior*.
+
+- State :: An object can have some amount of information in it. For example, a
+           ~String~ with ~n~ characters in it knows its length (~n~) and each of
+           the characters at positions ~0~ through ~n - 1~.
+- Behavior :: An object can have behavior attached to it. For example, a
+              ~String~ knows how to compare itself to another ~String~: when you
+              call ~s.equals(t)~, ~s~ will compare itself to ~t~ by checking
+              that the two strings have the same length and the same characters
+              at each position. When you call ~s.equalsIgnoreCase(t)~, it will
+              do the same thing, but ignoring character case.
+** Examples of objects
+- ~String~'s are objects that represent character sequences.
+- All arrays are objects, even arrays of primitive types like ~int[]~.
+- ~System.out~ is a ~PrintStream~ object representing your program's console
+  output stream. When you call methods on it, such as ~println()~, the output is
+  displayed in the console in Eclipse, or in your terminal if you run your
+  program from the command line.
+** Primitive vs. Reference ("object") types
+*** Which is which?
+- Here is a list of all of the primitive types in Java:
+  - ~boolean~
+  - ~byte~
+  - ~short~
+  - ~char~
+  - ~int~
+  - ~long~
+  - ~float~
+  - ~double~
+- Array types are reference types.
+- This is not a syntactic requirement, as Java *will allow* you to declare a
+  class whose name does not begin with an uppercase letter, but in Java
+  convention and throughout the standard library, the names of classes are
+  capitalized, e.g.:
+  - ~StringBuilder~
+  - ~IOException~
+  - ~File~
+*** Semantics
+**** Primitive Types
+Values of primitive types have a "direct representation" in memory.
+
+#+BEGIN_SRC java
+  int x = 3;
+  int y = x; // y = 3
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+    x     y
+  #---# #---#
+  |   | |   |
+  | 3 | | 3 |
+  |   | |   |
+  #---# #---#
+#+END_EXAMPLE
+**** Reference Types
+Values of reference types "point to" the location of the actual object. For
+example:
+
+#+BEGIN_SRC java
+  int[] x = new int[] { 1, 2, 3, 4, 5 };
+  int[] y = x;
+  // the above line is *not* equivalent to int[] y = new int [] { 1, 2, 3, 4, 5 };
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+    x       y
+  #---#   #---#
+  |   |   |   |
+  | | |   | | |
+  | | |   | | |
+  #-|-#   #-|-#
+    |       |
+    |      /
+    |     /
+    v    v
+  #-----------#
+  |#-#-#-#-#-#|
+  ||1|2|3|4|5||
+  |#-#-#-#-#-#|
+  #-----------#
+#+END_EXAMPLE
+
+The ~new~ operator *always* creates a totally new, never-before-seen object in
+your program.
+
+#+BEGIN_SRC java
+  int[] x = new int[] { 1, 2, 3, 4, 5 };
+  int[] y = new int[] { 1, 2, 3, 4, 5 };
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+    x       y
+  #---#   #---#      #-----------#
+  |   |   |   |      |#-#-#-#-#-#|
+  | | |   | -------->||1|2|3|4|5||
+  | | |   |   |      |#-#-#-#-#-#|
+  #-|-#   #---#      #-----------#
+    |
+    |
+    |
+    v
+  #-----------#
+  |#-#-#-#-#-#|
+  ||1|2|3|4|5||
+  |#-#-#-#-#-#|
+  #-----------#
+#+END_EXAMPLE
+**** Aliasing
+If you have more than one pointer to a given object, e.g., two local variables,
+they are said to be *aliased*. Aliasing can cause lots of confusion because if
+you mutate the object through one of the variables, and then inspect the other,
+it will seem to have mysteriously changed.
+
+#+BEGIN_SRC java
+  int[] x = new int[] { 1, 2, 3, 4, 5 };
+  int[] y = x;
+
+  x[2] = 9001;
+
+  System.out.println(Arrays.toString(y)); // prints out [1, 2, 9001, 4, 5]
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+    x       y
+  #---#   #---#
+  |   |   |   |
+  | | |   | | |
+  | | |   | | |
+  #-|-#   #-|-#
+    |       |
+    |      /
+    |     /
+    v    v
+  #-----------------#
+  |#-#-#-------#-#-#|
+  ||1|2|3->9001|4|5||
+  |#-#-#-------#-#-#|
+  #-----------------#
+#+END_EXAMPLE
+*** Value vs. Pointer semantics: why does it matter?
+Below are a couple examples of ways in which your Java program may seem to
+behave unexpectedly, which are due to the differences between value and pointer
+semantics.
+**** Method arguments
+Consider the following snippet from =src/examples/Example1.java=.
+
+#+INCLUDE: "src/examples/Example1.java" src java -n 6 :lines "6-29"
+
+We expect the output to be:
+
+#+BEGIN_EXAMPLE
+  min: 4, max: 88, first: 19, last: 72
+#+END_EXAMPLE
+
+But instead we get:
+
+#+BEGIN_EXAMPLE
+  min: 4, max: 88, first: 4, last: 88
+#+END_EXAMPLE
+
+This is because ~Arrays.sort()~ modifies the array in order to sort the elements
+into the correct order. When ~data~ is passed from ~main()~ to ~showMeTheData()~
+to ~smallest()~ to ~Arrays.sort()~, it is passed as a ~reference~ ("pointer") to
+the original array object created in ~main()~ (on line 26).
+
+Since these all point to the same exact location in memory, ~Arrays.sort()~
+writes over the original array, giving us the wrong answers for ~first~ and
+~last~.
+**** ~==~ vs. ~.equals()~
+Reference semantics also impacts the way equality comparison works. If you
+envision a location in memory (such as a variable, or an array element, etc.) as
+just a slot in which you can put a primitive value or a pointer to a reference
+value, ~==~ just compares the contents of that slot.
+
+With primitive types:
+
+#+BEGIN_SRC java
+  char x = '%';
+  char y = '%';
+
+  boolean equal = (x == y); // true
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+     x     y
+  #----# #----#
+  |    | |    |
+  | 37 | | 37 |
+  |    | |    |
+  #----# #----#
+#+END_EXAMPLE
+
+With reference types:
+
+#+BEGIN_SRC java
+  int[] x = new int[] { 1, 2, 3, 4, 5 };
+  int[] y = x;
+
+  boolean equal = (x == y); // true
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+         x               y
+  #------------#   #------------#
+  |            |   |            |
+  | 0x59e8f938 |   | 0x59e8f938 |
+  | |          |   |  |         |
+  #-|----------#   #--|---------#
+    |     ------------/
+    |    /
+    |    |
+    v    v
+  #-----------#
+  |#-#-#-#-#-#|
+  ||1|2|3|4|5||
+  |#-#-#-#-#-#|
+  #-----------#
+#+END_EXAMPLE
+
+#+BEGIN_SRC java
+  int[] x = new int[] { 1, 2, 3, 4, 5 };
+  int[] y = new int[] { 1, 2, 3, 4, 5 };
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+         x           y
+  #------------#   #------------#      #-----------#
+  |            |   |            |      |#-#-#-#-#-#|
+  | 0x59e8f938 |   | 0xa7b9ff20------->||1|2|3|4|5||
+  | |          |   |            |      |#-#-#-#-#-#|
+  #-|----------#   #------------#      #-----------#
+    |
+    |
+    |
+    v
+  #-----------#
+  |#-#-#-#-#-#|
+  ||1|2|3|4|5||
+  |#-#-#-#-#-#|
+  #-----------#
+#+END_EXAMPLE
+
+#+BEGIN_SRC java
+  int[] x = new int[] { 1, 2, 3, 4, 5 };
+  int[] y = new int[] { 1, 2, 3, 4, 5 };
+
+  boolean equal = (x == y); // false
+#+END_SRC
+***** ~.equals()~
+~a.equals(b)~ is a method call, which means it relies on the behavior specified
+by the class of ~a~ to determine whether ~a~ and ~b~ are equal. Typically this
+is implemented in such a way as to compare the "contents" of two objects, e.g.,
+
+#+BEGIN_SRC java
+  String a = "Hello, World!";
+  String b = "Hello, " + "World!";
+
+  boolean sameObject = (a == b); // false
+  boolean equal = a.equals(b);   // true
+#+END_SRC
+*** ~null~
+Recall that a reference-type value can be thought of as a slot with a pointer to
+the actual object. A *null reference* refers to a slot with no pointer, i.e., it
+is not pointing to any actual object. This is still a valid value for a
+reference type like ~String~, even though there may be no ~String~ there!
+
+Internally, this is represented with something like a memory address of zero,
+which is not a valid memory address so cannot refer to the location of an actual
+object.
+
+You can assign ~null~ to variables and pass it around without any problems, but
+if you ever try to call a method on a ~null~ reference value, Java's runtime
+will throw a ~NullPointerException~, telling you that you called a method on a
+~null~ value.
+* Classes
+Classes are used to define the following:
+
+- A type of object
+- *State* (fields/properties/members) for objects of that type
+- *Behavior* (methods) for objects of that type
+
+An example class might look like this:
+
+#+INCLUDE: "src/examples/Example2.java" src java -n
+** Fields
+Fields declare parts of the state of instances of the class. They are declared
+just like local variables.
+
+#+BEGIN_SRC java
+  class Cat {
+      String name;
+      String favoriteFood;
+      int age;
+  }
+#+END_SRC
+
+Each object that is an instance of ~Cat~ will have its own ~name~,
+~favoriteFood~, and ~age~ values.
+
+#+BEGIN_SRC java
+  Cat garfield = new Cat("Garfield", "Lasagna", 38);
+
+  System.out.println(garfield.name);         // Garfield
+  System.out.println(garfield.favoriteFood); // Lasagna
+  System.out.println(garfield.age);          // 38
+#+END_SRC
+** Methods
+Method definitions in classes are used to define the methods that can be called
+on an object. Methods can take any number of parameters through the normal way,
+but they also receive an implicit ~this~ parameter, which is a reference to the
+instance of the class they were called on.
+
+#+BEGIN_SRC java -n
+  class Cat {
+      // field definitions
+
+      public void introduceSelf(String toWhom) {
+          System.out.printf("Hello, %s.\n", toWhom);
+          System.out.printf("My name is %s, I am %d years old, and my favorite food is %s.\n",
+                            this.name,
+                            this.age,
+                            this.favoriteFood);
+      }
+  }
+
+  Cat garfield = new Cat("Garfield", "Lasagna", 38);
+  garfield.introduceSelf("Mr. President");
+  // the above line prints the following:
+  // Hello, Mr. President.
+  // My name is Garfield, I am 38 years old, and my favorite food is Lasagna.
+#+END_SRC
+
+On line 13 above, the method ~introduceSelf()~ is called with ~"Mr. President"~
+as the argument for ~toWhom~, and the implicit ~this~ parameter refers to
+~garfield~ inside of the method.
+
+Recall that methods may also specify a return type other than ~void~, so that
+they can return a value to the caller. E.g., a method called ~getName()~ might
+return a ~String~ whose value is the name of the cat.
+
+Inside methods, you can refer to the fields of the object (~this~) without
+specifying ~this.fieldName~ each time, by writing:
+
+#+BEGIN_SRC java
+  public void whoAmI() {
+      System.out.printf("My name is %s.\n", name);
+  }
+#+END_SRC
+** Constructors
+A constructor is a special method used when creating new instances of the class.
+Constructors are defined like normal methods, but omitting the return type and
+naming the method the same thing as the class, e.g.:
+
+#+BEGIN_SRC java
+  class Cat {
+      // field definitions
+
+      public Cat(String name, String favoriteFood, int age) {
+          this.name = name;
+          this.favoriteFood = favoriteFood;
+          this.age = age;
+      }
+  }
+#+END_SRC
+
+Note that we *must* use the ~this.fieldName~ notation to set the values of the
+fields, because we could not refer to ~name~, ~favoriteFood~, and ~age~ in the
+body of the constructor (since they are the names of the parameters to the
+method, they would refer to the arguments the constructor was called with
+instead).
+
+Constructors are called differently from normal methods. They power the ~new~
+keyword, which creates new instances of classes:
+
+#+BEGIN_SRC java
+  class Car {
+      int wheels;
+
+      public Car() {
+          this.wheels = 4;
+          System.out.println("Your car is done, sir/madam.");
+      }
+  }
+
+  // Even Teslas have just four wheels
+  Car tesla = new Car(); // prints "Your car is done..."
+#+END_SRC
+*** Default Constructor
+If you don't define any constructors for a class, Java provides a default one.
+The default constructor does the following things (approximately):
+
+- Initializes each field to its default value:
+  - Fields of primitive types like ~int~ are initialized to zero.
+  - Fields of reference types like ~String~ are initialized to ~null~ (not "empty").
+- Calls the superclass constructor (you'll learn about inheritance next time)
+
+Default constructors can come in handy sometimes, but more often than not, you
+will want to define your own constructor, especially because the default
+constructor cannot be passed any arguments.
+** Access Modifiers
+You can specify what code is allowed to access the fields and methods of your
+class by using *access modifiers*. The access modifiers are, in decreasing order
+of access: ~public~, ~protected~, (no modifier), and ~private~.
+
+~public~ causes fields and methods to be accessible from any part of the
+program.
+
+~protected~ causes fields and methods to be accessible from the current class,
+any code in the current package, and any code in subclasses of this class.
+
+Fields and methods with no modifiers are accessible from any code in the current
+package.
+
+~private~ fields and methods are accessible from inside the current class only.
+
+Violation of the Java access modifiers will result in a compilation error.
+
+Below is a table that sums this all up (from [[https://docs.oracle.com/javase/tutorial/java/javaOO/accesscontrol.html][here]])):
+
+|-------------+-------+---------+----------+-------|
+| Modifier    | Class | Package | Subclass | World |
+|-------------+-------+---------+----------+-------|
+| public      | ✓     | ✓       | ✓        | ✓     |
+| protected   | ✓     | ✓       | ✓        |       |
+| no modifier | ✓     | ✓       |          |       |
+| private     | ✓     |         |          |       |
+|-------------+-------+---------+----------+-------|
+
+** ~static~
+~static~ is a confusing and poorly-named modifier in Java that causes a lot of
+grief for students. Basically, it names methods and fields that do not belong to
+/instances/ of the class, but rather to /the class itself/. For example, static
+methods and fields in the ~Cat~ class are not related to any particular ~Cat~
+object, nor can they be referred to from an instance like ~garfield.getName()~,
+but are referred to instead from the class itself, e.g., ~Cat.getSpeciesName()~.
+
+The reason it's called ~static~ is a bit of a both deeply technical and
+legacy/historical discussion. Basically, ~static~ fields and methods exist at
+the start of the program, before any instances of objects have been created by
+~new~ (before ~main()~ is run). In fact, Java will give you a compilation error
+if you try to access instance (non-static) methods and fields from within the
+body of a ~static~ method.
+
+Since Java knows exactly how much space is required for all of the ~static~
+methods and fields in your entire program (only one copy of each of them exists
+ever, in the entire lifetime of your program), it can allocate all of that
+memory right at the beginning of your program in one go (as it happens, this can
+be done by just allocating space for these objects in the program code itself).
+
+This is referred to as *static* allocation (cf. [[https://en.wikipedia.org/wiki/Static_variable][Wikipedia]]), as opposed to
+*dynamic* memory allocation, which happens over the course of your program's
+execution, and which needs to be managed by the runtime, since Java does not
+know how much memory you will use, and when you will use it.
