@@ -22,5 +22,93 @@ public String parenBit(String str) {
   return nonparen + parenBit(rest);
 }
 
+/*
+Given a string, return true if it is a nesting of zero or more pairs of parenthesis, like "(())" or "((()))". Suggestion: check the first and last chars, and then recur on what's inside them.
+
+
+nestParen("(())") → true
+nestParen("((()))") → true
+nestParen("(((x))") → false
+*/
+public boolean nestParen(String str) {
+  if(str.length() == 0) return true;
+  if(str.length() < 2) return false;
+  if(str.length() == 2 && str.equals("()")) return true;
+  String first = str.substring(0, 1);
+  String last = str.substring(str.length() -1);
+  String rest = str.substring(1, str.length() -1);
+  if(first.equals("(") && last.equals(")")) {
+    return nestParen(rest);
+  }
+  return false;
+}
+
+
+/*
+
+Given a string and a non-empty substring sub, compute recursively the number of times that sub appears in the string, without the sub strings overlapping.
+
+
+strCount("catcowcat", "cat") → 2
+strCount("catcowcat", "cow") → 1
+strCount("catcowcat", "dog") → 0
+
+*/
+
+public int strCount(String str, String sub) {
+  int subLength = sub.length();
+  int count = 0;
+  if(str.length() < sub.length()) return 0;
+  String rest = str.substring(1);
+  if(str.substring(0, subLength).equals(sub)) {
+    count = 1;
+    rest = str.substring(subLength);
+  }
+  return count + strCount(rest, sub);
+}
+
+/*
+
+Given a string and a non-empty substring sub, compute recursively if at least n copies of sub appear in the string somewhere, possibly with overlapping. N will be non-negative.
+
+
+strCopies("catcowcat", "cat", 2) → true
+strCopies("catcowcat", "cow", 2) → false
+strCopies("catcowcat", "cow", 1) → true
+
+*/
+
+public boolean strCopies(String str, String sub, int n) {
+  int count = 0;
+  if(n < 0) {
+    return false;
+  }
+  if(str.length() < sub.length()) {
+    if(n > 0) {
+      return false;
+    } else {
+      return true;  
+    }
+  }
+  String early = str.substring(0, sub.length());
+  String rest = str.substring(1);
+  if(early.equals(sub)) {
+    count = 1;
+  }
+  return strCopies(rest, sub, n-count);
+}
+
+/*
+
+
+Given a string and a non-empty substring sub, compute recursively the largest substring which starts and ends with sub and return its length.
+
+
+strDist("catcowcat", "cat") → 9
+strDist("catcowcat", "cow") → 3
+strDist("cccatcowcatxx", "cat") → 9
+
+*/
+
 
 
