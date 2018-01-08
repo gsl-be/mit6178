@@ -110,5 +110,25 @@ strDist("cccatcowcatxx", "cat") → 9
 
 */
 
+public int strDist(String str, String sub) {
+
+  if(str.length() < sub.length()) {
+    return 0;
+  }
+  String first = str.substring(0, 1);
+  String rest = str.substring(1);
+  String shorter = str.substring(0, sub.length());
+  if(shorter.equals(sub)) {
+    rest = str.substring(sub.length());
+    String end = str.substring(str.length() - sub.length());
+    String minusEnd = str.substring(0, str.length() - 1);
+    if(end.equals(sub)) {
+      return str.length();
+    }
+    return strDist(minusEnd, sub);
+  }
+  return strDist(rest, sub);
+}
+
 
 
