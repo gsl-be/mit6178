@@ -1,0 +1,16 @@
+* {
+    font-family: Constantia !important;
+    text-transform: none !important;
+}
+
+h1 {
+    font-size: 2.8em !important;
+}
+
+h2 {
+    font-size: 1.8em !important;
+}
+
+pre, pre *, code, code * {
+    font-family: Anonymous Pro, Consolas, Monaco, monospace !important;
+}

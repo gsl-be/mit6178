@@ -1,0 +1,20 @@
+{
+    "name": "lec5",
+    "version": "0.1.0",
+    "description": "6.178 IAP 2017 Lecture 5",
+    "main": "index.js",
+    "scripts": {
+        "start": "http-server -o",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Aaron L. Zeng <a2z@mit.edu> (https://github.com/bcc32/)",
+    "license": "MIT",
+    "dependencies": {
+        "reveal.js": "^3.4.0"
+    },
+    "devDependencies": {},
+    "repository": {
+        "type": "git",
+        "url": "https://github.mit.edu/6178-2017/lec5"
+    }
+}

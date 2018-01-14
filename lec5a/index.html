@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>6.178 Lecture 5: More on Objects</title>
+<meta name="author" content="(Aaron Zeng)"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="./node_modules/reveal.js/css/reveal.css"/>
+
+<link rel="stylesheet" href="./node_modules/reveal.js/css/theme/solarized.css" id="theme"/>
+
+<link rel="stylesheet" href="./style.css"/>
+<link rel="stylesheet" href="./node_modules/reveal.js/lib/css/zenburn.css"/>
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = './node_modules/reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide"><h1 class="title">6.178 Lecture 5: More on Objects</h1><h2 class="author">Aaron Zeng</h2><h2 class="date">2017-01-20 Fri 11:00</h2><p class="date">Created: 2017-01-20 Fri 02:30</p>
+</section>
+<section>
+<section id="slide-org5066209">
+<h2 id="org5066209">Announcements</h2>
+<div class="outline-text-2" id="text-org5066209">
+</div></section>
+</section>
+<section>
+<section id="slide-orga2ef7be">
+<h3 id="orga2ef7be">Problem Set 1</h3>
+<p>
+Problem Set 1 staff solutions have been made available at
+<a href="https://github.mit.edu/6178-2017/ps1-staff-solutions">6178-2017/ps1-staff-solutions</a>. Click on the commit message or the commit SHA to
+see the solution code itself.
+</p>
+
+<aside class="notes">
+<p>
+Demo this.
+</p>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orgb097af3">
+<h3 id="orgb097af3">Lecture repos</h3>
+<p>
+Make sure to make your personal lecture repos private. Select &ldquo;Private&rdquo; when
+you&rsquo;re creating the repository so that only you can see your lecture exercises.
+</p>
+</section>
+</section>
+<section>
+<section id="slide-orgd71942b">
+<h2 id="orgd71942b">Inheritance</h2>
+<div class="outline-text-2" id="text-orgd71942b">
+</div></section>
+</section>
+<section>
+<section id="slide-orgf24cb3a">
+<h3 id="orgf24cb3a">Terminology</h3>
+<ul>
+<li>Classes in Java are arranged in a <b>class hierarchy</b>, which can be imagined as
+a tree of classes</li>
+<li>Each parent-child edge represents the relationship between a class and its
+<b>subclass</b>.</li>
+<li>The parent class of a subclass is called its <b>superclass</b>.</li>
+<li>The subclass is said to <b>inherit</b> from its superclass.</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgdd9a7b9">
+<h3 id="orgdd9a7b9">Single Inheritance Multiple Implementation</h3>
+<p>
+A class can have multiple subclasses, but each class may only have <b>one</b> parent
+class from which it inherits. This is known as <b>single inheritance</b>, as opposed
+to <b>multiple inheritance</b>, which is the system used in some other technologies
+like C++, Perl, and the Common Lisp Object System.
+</p>
+</section>
+</section>
+<section>
+<section id="slide-org8d30ba9">
+<h3 id="org8d30ba9">Basic Inheritance</h3>
+<p>
+Instances of a subclass include the state and behavior of the subclass, as well
+as its parent class (and so on up the hierarchy). That is to say, if we have
+class <code>Animal</code> with subclass <code>Dog</code>, every <code>Dog</code> instance will <i>inherit</i> the
+properties and methods of the <code>Animal</code> class.
+</p>
+</section>
+<section id="slide-org354a595">
+<h4 id="org354a595">Example</h4>
+<div class="org-src-container">
+
+<pre><code class="java" >package examples;
+class Animal {
+    public String name;
+    public Animal(String name) { this.name = name; }
+    public void breathe() { System.out.println("in, out"); }
+}
+class Dog extends Animal {
+    public String breed;
+    public Dog(String name, String breed) {
+        super(name);
+        this.breed = breed;
+    }
+    public void bark() { System.out.println("woof!"); }
+}
+public class Example1 {
+    public static void main(String[] args) {
+        Dog fido = new Dog("Fido", "Golden Retriever");
+        fido.breathe();
+        fido.bark();
+        System.out.println(fido.name);
+        System.out.println(fido.breed);
+    }
+}
+</code></pre>
+</div>
+</section>
+<section id="slide-org15a81bd">
+<h4 id="org15a81bd">Access Modifiers</h4>
+<ul>
+<li>Fields and methods of the superclass will be <i>inherited</i>, but if they are
+<code>private</code> or have no access modifier, they will not be &ldquo;visible&rdquo; in the
+subclass.</li>
+
+</ul>
+<aside class="notes">
+<p>
+Internally the object will still include those fields and methods, allowing it
+to still act like an instance of the superclass.
+</p>
+
+</aside>
+<ul>
+<li>If the fields are visible to the subclass, e.g., <code>protected</code> or <code>public</code>, then
+they can be accessed within the subclass as normal.</li>
+
+</ul>
+</section>
+<section id="slide-orga74f82f">
+<h4 id="orga74f82f">Exercise</h4>
+<div class="org-src-container">
+
+<pre><code class="java" >package exercises;
+
+class Appliance {
+    public int serialNumber;
+
+    public static int NUMBER_OF_APPLIANCES;
+
+    /**
+     * Create a new Appliance.
+     *
+     * Each new appliance gets the next serial number.
+     */
+    public Appliance() {
+        serialNumber = NUMBER_OF_APPLIANCES;
+        NUMBER_OF_APPLIANCES++;
+    }
+}
+
+/*
+ * TODO Create a class to represent your favorite type of appliance.
+ *
+ * - Rename the class to something else
+ * - Make the class inherit from `Appliance`
+ * - Give it a method unique to that kind of appliance
+ * - In main, call that method and print out the serial number of the appliance.
+ */
+class MyFavoriteKindOfAppliance {
+}
+
+public class BasicInheritance {
+    public static void main(String[] args) {
+    }
+}
+</code></pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orge7c58fe">
+<h3 id="orge7c58fe">Subtyping</h3>
+<p>
+An instance of a subclass can be treated, for all intents and purposes, as an
+instance of the superclass. For example, all <code>Dog</code> objects can be simply treated
+as <code>Animal</code> objects.
+</p>
+
+<p>
+We can call <code>Dog</code> a <b>subtype</b> of <code>Animal</code>. Since a <b>type</b> just specifies a set
+of possible values, and all possible <code>Dog</code> values are <code>Animal</code> values too, we
+can say that the set of values specified by <code>Dog</code> is a subset of that specified
+by <code>Animal</code>.
+</p>
+</section>
+<section id="slide-org1b8e0b2">
+<h4 id="org1b8e0b2">Example</h4>
+<div class="org-src-container">
+
+<pre><code class="java" >package examples;
+public class Example2 {
+    public static void main(String[] args) {
+        Animal myDog = new Dog("Fido", "Golden Retriever");
+        myDog.breathe();
+        // this line does not compile:
+        // myDog.bark();
+    }
+}
+</code></pre>
+</div>
+
+<p>
+We can also put multiple different kinds of <code>Animal</code> into the same array, by
+declaring the array type to be <code>Animal[]</code>.
+</p>
+
+</section>
+<section >
+
+<p>
+In the previous example, we cannot treat <code>myDog</code> as a <code>Dog</code> instance even though
+it is! This is because we have declared the type of the variable <code>myDog</code> to be
+<code>Animal</code>, so the Java compiler requires us to treat <code>myDog</code> as only an <code>Animal</code>.
+</p>
+</section>
+<section id="slide-orgcf8bc28">
+<h4 id="orgcf8bc28">Casting</h4>
+<p>
+We can get around this restriction in the following way:
+</p>
+
+<div class="org-src-container">
+
+<pre><code class="java" >Dog iSwearItsADog = (Dog) myDog;
+iSwearItsADog.bark();
+</code></pre>
+</div>
+
+<p>
+By forcibly <b>casting</b> the value of <code>myDog</code> to type <code>Dog</code>, we make the compiler
+treat the expression as an instance of <code>Dog</code> instead of as an <code>Animal</code>, so then
+we can call <code>.bark()</code> on the resulting expression.
+</p>
+
+</section>
+<section >
+
+<p>
+If we tried to cast an <code>Animal</code> that wasn&rsquo;t actually an instance of <code>Dog</code> to
+type <code>Dog</code>, then when we run the program, Java will encounter that line,
+detect that <code>myDog</code> mysteriously had type, say, <code>Cat</code> instead of <code>Dog</code>, and
+would throw a <code>ClassCastException</code>, basically telling you that you can&rsquo;t do
+that.
+</p>
+</section>
+</section>
+<section>
+<section id="slide-orge0d749b">
+<h3 id="orge0d749b">Overriding</h3>
+<p>
+You can override the behavior of a superclass method in the subclass by simply
+defining a method with the same name and signature:
+</p>
+
+<div class="org-src-container">
+
+<pre><code class="java" >package examples;
+class Vegetable {
+    public String color() { return "green"; }
+}
+class Carrot extends Vegetable {
+    @Override public String color() { return "orange"; }
+}
+public class Example3 {
+    public static void main(String[] args) {
+        Vegetable lettuce = new Vegetable();
+        System.out.println(lettuce.color()); // green
+
+        Carrot carrot = new Carrot();
+        System.out.println(carrot.color()); // orange
+
+        Vegetable carrotAsAVegetable = carrot;
+        System.out.println(carrotAsAVegetable.color()); // orange
+    }
+}
+</code></pre>
+</div>
+
+<p>
+Note that the correct <code>color()</code> method is called for the <code>Carrot</code> object even
+though the variable that refers to it has a declared type of <code>Vegetable</code>!
+</p>
+</section>
+<section id="slide-orgdf17538">
+<h4 id="orgdf17538"><code>@Override</code></h4>
+<p>
+You can annotate overridden methods with an <code>@Override</code> tag. This tag is
+optional but recommended because it will help catch typos (learn more in 6.031).
+</p>
+</section>
+</section>
+<section>
+<section id="slide-org286538c">
+<h3 id="org286538c"><code>super</code></h3>
+<p>
+You can access the original implementation of overridden methods using the
+<code>super</code> keyword. This allows you to override a method by just <b>slightly</b>
+altering the original behavior.
+</p>
+</section>
+<section id="slide-orgb6237bb">
+<h4 id="orgb6237bb">Ordinary methods</h4>
+<div class="org-src-container">
+
+<pre><code class="java" >package examples;
+
+class Parent {
+    public int generation() { return 0; }
+}
+class Child extends Parent {
+    @Override public int generation() { return super.generation() + 1; }
+}
+class Grandchild extends Child {
+    @Override public int generation() { return super.generation() + 1; }
+}
+public class Example4 {
+    public static void main(String[] args) {
+        int generation = new Grandchild().generation();
+        System.out.println(generation); // 2
+    }
+}
+</code></pre>
+</div>
+</section>
+<section id="slide-orgf9b0bd8">
+<h4 id="orgf9b0bd8">Constructors</h4>
+<div class="org-src-container">
+
+<pre><code class="java" >package examples;
+class Animal {
+    public String name;
+    public Animal(String name) { this.name = name; }
+    public void breathe() { System.out.println("in, out"); }
+}
+class Dog extends Animal {
+    public String breed;
+    public Dog(String name, String breed) {
+        super(name);
+        this.breed = breed;
+    }
+    public void bark() { System.out.println("woof!"); }
+}
+public class Example1 {
+    public static void main(String[] args) {
+        Dog fido = new Dog("Fido", "Golden Retriever");
+        fido.breathe();
+        fido.bark();
+        System.out.println(fido.name);
+        System.out.println(fido.breed);
+    }
+}
+</code></pre>
+</div>
+</section>
+<section id="slide-org23cda97">
+<h4 id="org23cda97">Exercise</h4>
+<div class="org-src-container">
+
+<pre><code class="java" >package exercises;
+
+class Ship {
+    private int length;
+
+    public Ship(int length) {
+        this.length = length;
+    }
+
+    public int getLength() { return length; }
+
+    public boolean isSunk(int hits) {
+        return hits >= length;
+    }
+}
+
+/*
+ * TODO Create a class for submarines.
+ *
+ * - Make it inherit from `Ship`
+ * - Give it a constructor:
+ *   - `length` is private, so you won't be able to initialize it directly.
+ *   - Use `super()` to call `Ship's` constructor from your class's constructor
+ * - Override the isSunk() method. Submarines should print out "SOS" before
+ *   reporting that they are sunk.
+ *   - Don't recompute line 13. Use `super`!
+ */
+
+class Submarines /* TODO */ {
+    // TODO constructor here
+
+    // TODO override isSunk()
+}
+
+public class OverrideAndSuper {
+    public static void main(String[] args) {
+        /*
+         * TODO Create an instance of your new class and use it.
+         *
+         * - Create an instance of your new class.
+         * - Call the isSunk() method with various arguments.
+         */
+    }
+}
+</code></pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orga620d72">
+<h3 id="orga620d72"><code>Object</code> class</h3>
+<p>
+All classes in Java are part of the same hierarchy, and the root of the
+hierarchy is class <code>Object</code>. Every class is a subclass of <code>Object</code> (perhaps
+through several layers), and every object is therefore an instance of <code>Object</code>.
+</p>
+
+<p>
+<code>Object</code> has several methods, but the most useful one is <code>toString()</code>.
+</p>
+</section>
+<section id="slide-org37093ee">
+<h4 id="org37093ee"><code>toString()</code></h4>
+<p>
+<code>Object.toString()</code> returns a &ldquo;human-readable&rdquo; string representation of the
+object. For objects whose class does not override <code>toString()</code>, the value
+returned by <code>toString()</code> includes the name of the class of the instance as well
+as a unique(-ish) hexadecimal ID for that object.
+</p>
+</section>
+<section id="slide-org6581d10">
+<h4 id="org6581d10">Overriding <code>toString()</code></h4>
+<div class="org-src-container">
+
+<pre><code class="java" >package examples;
+class Person {
+    private String name;
+    private int age;
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+    @Override public String toString() {
+        return "(Person named " + name + ", " + age + " years old)";
+    }
+}
+public class Example5 {
+    public static void main(String[] args) {
+        Person me = new Person("Aaron", 19);
+        String meAsAString = me.toString();
+        System.out.println(meAsAString);
+        System.out.println(me); // println() automagically calls .toString() on Objects
+    }
+}
+</code></pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orgdff5143">
+<h2 id="orgdff5143">Interfaces</h2>
+<p>
+Say you have a class <code>WaterBottle</code> and a class <code>MetalObject</code>. <code>WaterBottle</code> has
+a bunch of useful methods for objects that contain water, such as pouring out
+the water into a drinking cup, emptying the water, asking how much water is left
+in the vessel, etc. <code>MetalObject</code> has a bunch of useful methods for objects made
+out of metal, e.g., <code>recycle()</code>.
+</p>
+
+<p>
+What if you have a <code>MetalWaterBottle</code> in your system, which you would like to
+treat sometimes as a <code>WaterBottle</code> and sometimes as a <code>MetalObject</code>?
+</p>
+
+</section>
+<section >
+
+<p>
+You cannot make <code>MetalWaterBottle</code> inherit from both <code>WaterBottle</code> and
+<code>MetalObject</code>, because Java prohibits multiple inheritance.
+</p>
+
+<pre class="example">
+#-------------#    #-------------#
+| WaterBottle |    | MetalObject |
+#-------------#    #-------------#
+           ^           ^
+           |           |
+       #------------------#
+       | MetalWaterBottle |
+       # -----------------#
+</pre>
+
+<pre class="example">
+      ...                                                           .          ..                  s       .                                       ..      .
+   xH88"`~ .x8X                                                    @88&gt;  x .d88"                  :8      @88&gt;                                  x88f` `..x88. .&gt;
+ :8888   .f"8888Hf        u.      ..    .     :     .d``           %8P    5888R                  .88      %8P          u.      u.    u.       :8888   xf`*8888%     .u    .      .u    .          u.      .u    .
+:8888&gt;  X8L  ^""`   ...ue888b   .888: x888  x888.   @8Ne.   .u      .     '888R         u       :888ooo    .     ...ue888b   x@88k u@88c.    :8888f .888  `"`     .d88B :@8c   .d88B :@8c   ...ue888b   .d88B :@8c
+X8888  X888h        888R Y888r ~`8888~'888X`?888f`  %8888:u@88N   .@88u    888R      us888u.  -*8888888  .@88u   888R Y888r ^"8888""8888"    88888' X8888. &gt;"8x  ="8888f8888r ="8888f8888r  888R Y888r ="8888f8888r
+88888  !88888.      888R I888&gt;   X888  888X '888&gt;    `888I  888. ''888E`   888R   .@88 "8888"   8888    ''888E`  888R I888&gt;   8888  888R     88888  ?88888&lt; 888&gt;   4888&gt;'88"    4888&gt;'88"   888R I888&gt;   4888&gt;'88"
+88888   %88888      888R I888&gt;   X888  888X '888&gt;     888I  888I   888E    888R   9888  9888    8888      888E   888R I888&gt;   8888  888R     88888   "88888 "8%    4888&gt; '      4888&gt; '     888R I888&gt;   4888&gt; '
+88888 '&gt; `8888&gt;     888R I888&gt;   X888  888X '888&gt;     888I  888I   888E    888R   9888  9888    8888      888E   888R I888&gt;   8888  888R     88888 '  `8888&gt;       4888&gt;        4888&gt;       888R I888&gt;   4888&gt;
+`8888L %  ?888   ! u8888cJ888    X888  888X '888&gt;   uW888L  888'   888E    888R   9888  9888   .8888Lu=   888E  u8888cJ888    8888  888R     `8888&gt; %  X88!       .d888L .+    .d888L .+   u8888cJ888   .d888L .+
+ `8888  `-*""   /   "*888*P"    "*88%""*88" '888!` '*88888Nu88P    888&amp;   .888B . 9888  9888   ^%888*     888&amp;   "*888*P"    "*88*" 8888"     `888X  `~""`   :    ^"8888*"     ^"8888*"     "*888*P"    ^"8888*"
+   "888.      :"      'Y"         `~    "    `"`   ~ '88888F`      R888"  ^*888%  "888*""888"    'Y"      R888"    'Y"         ""   'Y"         "88k.      .~        "Y"          "Y"         'Y"          "Y"
+     `""***~"`                                        888 ^         ""      "%     ^Y"   ^Y'               ""                                     `""*==~~`
+                                                      *8E
+                                                      '8&gt;
+                                                       "
+</pre>
+</section>
+</section>
+<section>
+<section id="slide-orgb8ff835">
+<h3 id="orgb8ff835">What are interfaces, abstractly?</h3>
+<p>
+An <b>interface</b> defines a set of classes with shared behavior. Instances of these
+classes can then be treated the same with respect to that behavior, without
+knowledge of the concrete class of those instances.
+</p>
+</section>
+</section>
+<section>
+<section id="slide-orgb521975">
+<h3 id="orgb521975">What are interfaces, concretely?</h3>
+<p>
+An <code>interface</code> defines a set of methods (names and signatures). Classes that
+have all of the methods in an interface are said to <b>implement</b> that interface.
+</p>
+
+<p>
+Interfaces can also be treated as a type. Classes that <b>implement</b> the interface
+are then subtypes of the interface, because their instances have all of the
+behavior specified by the interface (and then some).
+</p>
+</section>
+</section>
+<section>
+<section id="slide-orgb87106c">
+<h3 id="orgb87106c">Interface example</h3>
+<div class="org-src-container">
+
+<pre><code class="java" >package examples;
+interface SoundMaker {
+    void makeASound();
+}
+class Bird implements SoundMaker {
+    public void makeASound() { System.out.println("tweet"); }
+    public void catchWorms() {}
+}
+class Person implements SoundMaker {
+    public void makeASound() { System.out.println("howdy"); }
+    public void philosophize() {}
+}
+public class Example6 {
+    SoundMaker[] things = new SoundMaker[] { new Bird(), new Person() };
+    for (int i = 0; i < things.length; i++) {
+        SoundMaker soundMaker = things[i];
+        soundMaker.makeASound();
+        // these two lines don't compile
+        // soundMaker.catchWorms();
+        // soundMaker.philosophize();
+    }
+}
+</code></pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-org92be4fd">
+<h3 id="org92be4fd">Exercise</h3>
+<div class="org-src-container">
+
+<pre><code class="java" >package exercises;
+
+interface Person {
+    String getName();
+    int getWage();
+}
+
+class Employee {
+    private String name;
+    private int wage;
+
+    public Employee(String name, int wage) {
+        this.name = name;
+        this.wage = wage;
+    }
+}
+
+class Manager {
+    private String name;
+    private int wage;
+
+    public Manager(String name, int wage) {
+        this.name = name;
+        this.wage = wage;
+    }
+}
+
+public class Interface {
+    public static void main(String[] args) {
+        /*
+         * TODO Make this method compile. You may have to edit Person, Employee,
+         * and/or Manager to get it to work.
+         */
+
+        Person ben = new Employee("Ben Bitdiddle", 15);
+        Person alyssa = new Manager("Alyssa P. Hacker", 30);
+
+        Person[] company = new Person[] { ben, alyssa };
+
+        for (int i = 0; i < company.length; i++) {
+            Person p = company[i];
+            System.out.printf("%s makes $%d per hour.\n", p.getName(), p.getWage());
+        }
+    }
+}
+</code></pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-orgf9b6587">
+<h3 id="orgf9b6587">Coming full circle</h3>
+<p>
+Now, we can define <code>MetalObject</code> as an interface with a <code>recycle()</code> method, and
+<code>WaterBottle</code> as an interface with an <code>howMuchLeft()</code> method, and so on.
+</p>
+
+<p>
+<code>MetalWaterBottle</code> can now implement both of these interfaces, and can be
+treated as each of the different types in different contexts in your program.
+</p>
+</section>
+</section>
+<section>
+<section id="slide-org79250c6">
+<h2 id="org79250c6">Important Standard Library Classes</h2>
+<p>
+All of these classes and interfaces are in <code>java.util</code>.
+</p>
+</section>
+</section>
+<section>
+<section id="slide-org38a246e">
+<h3 id="org38a246e"><code>List</code></h3>
+<p>
+<code>List</code>&rsquo;s are like Python lists. They represent ordered sequences of elements
+that can be accessed by 0-based numerical indices. Like Python&rsquo;s lists, they can
+be appended to, or inserted into. This makes them strictly more flexible than
+arrays because you can change the length of a <code>List</code> over the course of your
+program&rsquo;s execution.
+</p>
+
+</section>
+<section >
+
+<p>
+<code>List</code> is actually an <code>interface</code>. It has many methods that you might expect,
+including <code>get()</code>, <code>set()</code>, <code>size()</code>, <code>add()</code> (append), and so on. There are
+several implementations of <code>List</code> in the Java standard library (i.e., classes
+that &ldquo;implement&rdquo; <code>List</code>), but the most important is <code>ArrayList</code>.
+</p>
+</section>
+<section id="slide-orgb0da135">
+<h4 id="orgb0da135"><code>ArrayList</code></h4>
+<p>
+An <code>ArrayList</code> is a <code>List</code> whose internal data structure is an array. When you
+run out of space and need to add more elements, it:
+</p>
+
+<ul>
+<li>Creates a new, bigger, array;</li>
+<li>Copies all of the elements from the old array; and</li>
+<li>Inserts the new element at the end</li>
+
+</ul>
+</section>
+<section id="slide-orgb51bb9e">
+<h4 id="orgb51bb9e">Example</h4>
+<div class="org-src-container">
+
+<pre><code class="java" >List<String> favoriteWords = new ArrayList<String>();
+
+favoriteWords.add("teacup");
+favoriteWords.add("pasta");
+favoriteWords.add("java");
+
+System.out.println(favoriteWords); // [teacup, pasta, java]
+
+System.out.println(favoriteWords.size()); // 3
+
+System.out.println(favoriteWords.get(1)); // pasta
+
+favoriteWords.set(2, "Java");
+
+System.out.println(favoriteWords); // [teacup, pasta, Java]
+</code></pre>
+</div>
+
+<aside class="notes">
+<p>
+Turns out org-reveal has a bug that causes the angle brackets in src
+environments to fail to be escaped. Guess who had to file an <a href="https://github.com/yjwen/org-reveal/issues/265">issue</a> at 01:20
+a.m. this morning?
+</p>
+
+</aside>
+</section>
+<section id="slide-org3f7de8e">
+<h4 id="org3f7de8e">Exercise</h4>
+<div class="org-src-container">
+
+<pre><code class="java" >public class ListExercise {
+    public static void main(String[] args) {
+        List<Integer> numbers = new List<Integer>();
+
+        for (int i = 0; i < 20; i++) {
+            int randomInt = (int)(Math.random() * 100);
+            numbers.add(randomInt);
+        }
+
+        List<Integer> evenNumbers = new List<Integer>();
+
+        // TODO add all of the even numbers in `numbers` to `evenNumbers`
+
+        // TODO print out evenNumbers (use toString())
+
+        // TODO print out how many elements evenNumbers has
+    }
+}
+</code></pre>
+</div>
+
+<aside class="notes">
+<p>
+Mention that <code>println()</code> has an implicit <code>toString()</code> call.
+</p>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org6c840d9">
+<h3 id="org6c840d9"><code>Map</code></h3>
+<p>
+A <code>Map&lt;K, V&gt;</code> is akin to a Python dictionary. Conceptually, it is an unordered
+table with key-value pairs, at most one per unique key.
+</p>
+
+<aside class="notes">
+<p>
+K is the type of the key element, V is the type of the V element. For example, Map&lt;String, Integer&gt;
+</p>
+
+</aside>
+
+</section>
+<section id="slide-orga90ad69">
+<h4 id="orga90ad69">&ldquo;Key&rdquo; operations</h4>
+<ul>
+<li><code>get(key)</code> retrieves the value associated with a given key in the map, null if
+no such key</li>
+<li><code>put(key, val)</code> associates the given key with the value, replacing if already
+present</li>
+<li><code>size()</code> returns the number of key-value pairs</li>
+<li><code>containsKey(key)</code> returns <code>true</code> iff the map contains an entry for <code>key</code></li>
+
+</ul>
+</section>
+<section id="slide-org62bafde">
+<h4 id="org62bafde"><code>HashMap</code></h4>
+<p>
+<code>HashMap</code> is the most commonly-used implementation of <code>Map</code>.
+</p>
+</section>
+<section id="slide-org703fb34">
+<h4 id="org703fb34">Example</h4>
+<div class="org-src-container">
+
+<pre><code class="java" >Map<String, Integer> phonebook = getTheDataSomehow();
+
+String name = "Jane Doe";
+int phoneNumber = phonebook.get(name);
+System.out.printf("%s can be reached at %d.\n", name, phoneNumber);
+</code></pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-org4edc71e">
+<h3 id="org4edc71e"><code>Set</code></h3>
+<p>
+A <code>Set</code> represents an unordered set of elements.
+</p>
+</section>
+<section id="slide-org2c62800">
+<h4 id="org2c62800">Important operations</h4>
+<ul>
+<li><code>contains(e)</code> returns <code>true</code> iff the set contains an element equal to <code>e</code></li>
+<li><code>add(e)</code> adds element <code>e</code> to the set</li>
+<li><code>remove(e)</code> removes element <code>e</code> from the set</li>
+<li><code>size()</code> returns the number of elements in the set</li>
+
+</ul>
+</section>
+<section id="slide-org75e11d3">
+<h4 id="org75e11d3"><code>HashSet</code></h4>
+<p>
+<code>HashSet</code> is the most commonly-used implementation of <code>Set</code>.
+</p>
+</section>
+<section id="slide-orgfc3ed67">
+<h4 id="orgfc3ed67">Example</h4>
+<div class="org-src-container">
+
+<pre><code class="java" >Set<Integer> luckyNumbers = openFortuneCookie();
+
+luckyNumbers.remove(13); // in case the fortune cookie is wrong
+
+int myFavoriteNumber = 8;
+
+boolean isLucky = luckyNumbers.contains(8);
+</code></pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-org71472b8">
+<h3 id="org71472b8">Iterators and Iterables</h3>
+<p>
+<code>Iterator&lt;E&gt;</code> and <code>Iterable&lt;E&gt;</code> are both interfaces.
+</p>
+
+</section>
+<section >
+
+<p>
+An <code>Iterator&lt;E&gt;</code> is an object that can supply objects of type <code>E</code>. When you call
+<code>next()</code> on an <code>Iterator</code>, it returns the next object of type <code>E</code> in the
+iteration, or throws <code>NoSuchElementException</code> if there are no more elements.
+</p>
+
+</section>
+<section >
+
+<p>
+You can call <code>hasNext()</code> on an <code>Iterator&lt;E&gt;</code> to find out if there are any more
+elements available. This can help you avoid <code>NoSuchElementException</code> errors.
+</p>
+
+</section>
+<section >
+
+<div class="org-src-container">
+
+<pre><code class="java" >// this code prints out all of the names provided by namesIter
+
+Iterator<String> namesIter = magic();
+
+while (namesIter.hasNext()) {
+    String name = namesIter.next();
+    System.out.println(name);
+}
+</code></pre>
+</div>
+
+</section>
+<section >
+
+<p>
+An <code>Iterable&lt;E&gt;</code> is an object that has a method <code>iterator()</code>, which must return
+a value of type <code>Iterator&lt;E&gt;</code>. That is to say, it is an object that can be
+&ldquo;iterated over&rdquo;, such as <code>List</code>&rsquo;s, <code>Set</code>&rsquo;s, and even arrays.
+</p>
+</section>
+<section id="slide-org85d4bc2">
+<h4 id="org85d4bc2">&ldquo;Enhanced&rdquo; <code>for</code> loops</h4>
+<p>
+<code>Iterable</code>&rsquo;s are useful because they enable a convenient syntax feature in Java:
+the &ldquo;enhanced&rdquo; <code>for</code> loop. This makes iterating over things easier:
+</p>
+
+<div class="org-src-container">
+
+<pre><code class="java" >int[] numbers = new int[] { 1, 2, 3, 4, 5 };
+
+int sum = 0;
+for (int x : numbers) {
+    sum += x;
+}
+
+System.out.println(sum); // 15
+</code></pre>
+</div>
+
+<aside class="notes">
+<p>
+This can be a <code>List</code> or a <code>Set</code> too.
+</p>
+
+</aside>
+
+</section>
+<section >
+
+<p>
+An enhanced <code>for</code> loop has the following form:
+</p>
+
+<div class="org-src-container">
+
+<pre><code class="java" >for (<type> <name> : <iterable>) {
+    // do something with the variable <name>
+}
+</code></pre>
+</div>
+
+<p>
+This iterates over the iterable until it is depleted, just like the previous
+<code>while</code>-loop example.
+</p>
+
+</section>
+</section>
+<section>
+<section id="slide-org9be3d81">
+<h3 id="org9be3d81">Collections</h3>
+<p>
+<code>List</code>&rsquo;s and <code>Set</code>&rsquo;s are both <code>Collection</code>&rsquo;s. They represent a group of objects
+called <i>elements</i>. There are many useful methods that operate on all kinds of
+<code>Collection</code>&rsquo;s in general. All <code>Collection&lt;E&gt;</code>&rsquo;s are <code>Iterable&lt;E&gt;</code>&rsquo;s.
+</p>
+</section>
+</section>
+</div>
+</div>
+<script src="./node_modules/reveal.js/lib/js/head.min.js"></script>
+<script src="./node_modules/reveal.js/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: true,
+center: true,
+slideNumber: 'c',
+rollingLinks: false,
+keyboard: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'slide', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: './node_modules/reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+ { src: './node_modules/reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>
